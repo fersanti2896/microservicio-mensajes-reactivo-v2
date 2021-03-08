@@ -83,6 +83,7 @@ public class Hacha {
 	 */
 	public void crearCortes() throws IOException {
 		
+		/* Inicia algoritmo de compresion LZ4 */
 		InputStream in = Files.newInputStream(Paths.get(rutaOrigen + nombreArchivo));
 		OutputStream fout = Files.newOutputStream(Paths.get(rutaDestino + nombreArchivo + ".lz4"));
 		BufferedOutputStream out = new BufferedOutputStream(fout);
@@ -96,6 +97,7 @@ public class Hacha {
 		lzOut.close();
 		in.close();
 
+		/* Una vez que se comprimio, se le pasa la ruta para procesarla con Hacha */
 		Path pathArchivoOriginal = Paths.get(rutaDestino + nombreArchivo + ".lz4");
 		// El UMA se usa para definir el tamanio del buffer que obtendra datos del disco
 		// duro.
@@ -133,6 +135,7 @@ public class Hacha {
 			}
 
 			if (contadorChunks == 0) {
+				/* El primer corte se almacena en server 1 */
 				System.out.println("Parte: " + contadorChunks);
 
 				Path pathCorte = Paths.get(rutaArchivo + File.separator + nombreCorte + "." + contadorChunks);
@@ -144,6 +147,7 @@ public class Hacha {
 				seekableBCEscritura.close();
 
 			} else if (contadorChunks == 1) {
+				/* El segundo corte se manda al segundo microservicio para ser procesado */
 				System.out.println("Soy la parte: " + contadorChunks);
 
 				Path pathCorte = Paths.get(rutaArchivo + File.separator + nombreCorte + "." + contadorChunks);
@@ -160,6 +164,8 @@ public class Hacha {
 
 				HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
+				/* Ruta donde se aloja el segundo microservicio, se tiene que cmabiar el puerto ya que es aleatorio
+				 * por la segunda instancia del microservicio Zuul */
 				String serverUrl = "http://localhost:54725/api/aleph2/almacenarArchivo";
 
 				RestTemplate restTemplate = new RestTemplate();
